@@ -31,12 +31,12 @@ def check_login():
     print(deutsch_kurs)
     
     soup = BeautifulSoup(s.get(deutsch_kurs).text, 'html.parser')
-    anwesenheit = soup.find('li', id='section-1').findChild("a", recursive=False).get('href')
+    anwesenheit = soup.find('li', id='section-1').findChild("a").get('href')
     print(anwesenheit)
 
     soup = BeautifulSoup(s.get(anwesenheit).text, 'html.parser')
 
-schedule.every().day.at("08:00").do(check_login)
+schedule.every().day.at("18:08").do(check_login)
 
 while True:
     schedule.run_pending()
