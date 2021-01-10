@@ -36,7 +36,7 @@ def check_login():
 
     soup = BeautifulSoup(s.get(anwesenheit).text, 'html.parser')
 
-schedule.every().day.at("18:08").do(check_login)
+schedule.every().day.at("08:00").do(check_login)
 
 while True:
     schedule.run_pending()
