@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 
 usrname = 'username'
 pwd = 'password'
+executeNow = True
 
 URL = 'https://moodle.egkehl.de/'
 LOGIN_ROUTE = 'moodle/blocks/exa2fa/login/'
@@ -27,7 +28,7 @@ def check_login():
     print(response.status_code)
 
     soup = BeautifulSoup(s.get(URL + 'moodle').text, 'html.parser')
-    deutsch_kurs = soup.find('a', id='label_3_22').get('href')
+    deutsch_kurs = soup.find('a', {"title": "J1 Deutsch Asset"}).get('href')
     print(deutsch_kurs)
     
     soup = BeautifulSoup(s.get(deutsch_kurs).text, 'html.parser')
@@ -36,8 +37,10 @@ def check_login():
 
     soup = BeautifulSoup(s.get(anwesenheit).text, 'html.parser')
 
-schedule.every().day.at("08:00").do(check_login)
-
-while True:
-    schedule.run_pending()
-    time.sleep(30)
+if (executeNow):
+    check_login()
+else:
+    schedule.every().day.at("08:00").do(check_login)
+    while True:
+        schedule.run_pending()
+        time.sleep(30)
