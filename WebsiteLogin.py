@@ -5,15 +5,15 @@ from bs4 import BeautifulSoup
 
 usrname = input('Username: ')
 pwd = input('Password: ')
-execute_now = input('Do you want to schedule the task for 8am? (y/n): ')
+schedule_task = input('Do you want to schedule the task for 8am? (y/n): ')
 
 attendance_password = 'Anwesenheit_J1_Asset'
 origin_url = 'https://moodle.egkehl.de/'
 login_url = 'https://moodle.egkehl.de/moodle/blocks/exa2fa/login/'
 attendance_link = 'https://moodle.egkehl.de/moodle/mod/attendance/view.php?id=16845'
 
-def should_execute_now():
-    if (execute_now.lower() == 'y'):
+def should_schedule_task():
+    if (schedule_task.lower() == 'y'):
         return True
     else:
         return False
@@ -74,10 +74,11 @@ def check_login():
         print('Failed to check attendence: ' + str(response_attendance.status_code))
         return
 
-if (should_execute_now()):
-    check_login()
-else:
+if (should_schedule_task()):
     schedule.every().day.at('08:00').do(check_login)
     while True:
         schedule.run_pending()
         time.sleep(30)
+else:
+    check_login()
+
