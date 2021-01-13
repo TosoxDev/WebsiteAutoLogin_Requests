@@ -3,18 +3,24 @@ import schedule
 import time
 from bs4 import BeautifulSoup
 
-#config start
-usrname = 'username'
-pwd = 'password'
-presence_password = 'Anwesenheit_J1_Asset'
+usrname = input('Username: ')
+pwd = input('Password: ')
+execute_now = input('Do you want to schedule the task for 8am? (y/n): ')
+
+attendance_password = 'Anwesenheit_J1_Asset'
 origin_url = 'https://moodle.egkehl.de/'
 login_url = 'https://moodle.egkehl.de/moodle/blocks/exa2fa/login/'
-presence_link = 'https://moodle.egkehl.de/moodle/mod/attendance/view.php?id=16845'
-executeNow = True
-#config end
+attendance_link = 'https://moodle.egkehl.de/moodle/mod/attendance/view.php?id=16845'
+
+def should_execute_now():
+    if (execute_now.lower() == 'y'):
+        return True
+    else:
+        return False
 
 def check_login():
     s = requests.session()
+
     session_token = s.get(login_url).cookies['MoodleSession']
 
     headers_login = {
@@ -29,41 +35,49 @@ def check_login():
     }
     
     response_login = s.post(login_url, headers=headers_login, data=payload_login)
-    print(response_login.status_code)
+    if (response_login.status_code != 200):
+        print('Failed to login: ' + str(response_login.status_code))
+        return
     
-    soup = BeautifulSoup(s.get(presence_link).text, 'html.parser')
-    record_presence = soup.find('td', {"class": "statuscol cell c2 lastcol"}).findChild("a").get('href')
-    print(record_presence)
+    try:
+        soup = BeautifulSoup(s.get(attendance_link).text, 'html.parser')
+        record_attendance = soup.find('td', {'class': 'statuscol cell c2 lastcol'}).findChild('a').get('href')
+        print(record_attendance)
+    except Exception:
+        print('Error finding the attendance-recording link')
+        return
     
-    split_link = record_presence.split("?")
+    split_link = record_attendance.split('?')
     print(split_link)
-    ids = split_link[1].split("&amp;")
+    ids = split_link[1].split('&amp;')
     sessid = ids[0].replace('sessid=', '')
     sesskey = ids[1].replace('sesskey=', '')
-    print(sessid + ', ' + sesskey)
+    print(str(sessid) + ', ' + str(sesskey))
     
-    headers_presence = {
+    headers_attendance = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
     'origin': origin_url,
-    'referer' : record_presence
+    'referer' : record_attendance
     }
-    payload_presence = {
+    payload_attendance = {
         '_qf__mod_attendance_form_studentattendance': '1',
         'mform_isexpanded_id_session=1': '1',
-        'studentpassword': presence_password,
+        'studentpassword': attendance_password,
         'status': '361',
         'submitbutton': 'Änderungen speichern',
         'sessid': sessid,
         'sesskey': sesskey
     }
 
-    response_presence = s.post(record_presence, headers=headers_presence, data=payload_presence)
-    print(response_presence.status_code)
+    response_attendance = s.post(record_attendance, headers=headers_attendance, data=payload_attendance)
+    if (response_attendance.status_code != 200):
+        print('Failed to check attendence: ' + str(response_attendance.status_code))
+        return
 
-if (executeNow):
+if (should_execute_now()):
     check_login()
 else:
-    schedule.every().day.at("08:00").do(check_login)
+    schedule.every().day.at('08:00').do(check_login)
     while True:
         schedule.run_pending()
         time.sleep(30)
