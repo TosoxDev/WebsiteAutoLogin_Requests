@@ -43,7 +43,7 @@ def check_login(username, password):
         soup = BeautifulSoup(s.get(attendance_link).text, 'html.parser')
         record_attendance = soup.find('td', {'class': 'statuscol cell c2 lastcol'}).findChild('a').get('href')
         print(record_attendance)
-    except Exception:
+    except AttributeError:
         print('Error finding the attendance-recording link')
         return
     
@@ -75,14 +75,21 @@ def check_login(username, password):
         return
 
 def main():
-    username, password, schedule_task = set_config()
-    if (schedule_task):
-        schedule.every().day.at('08:00').do(check_login, username, password)
-        while True:
-            schedule.run_pending()
-            time.sleep(30)
-    else:
-        check_login(username, password)
+    try:
+        username, password, schedule_task = set_config()
+        if (schedule_task):
+            schedule.every().day.at('08:00').do(check_login, username, password)
+            while True:
+                schedule.run_pending()
+                time.sleep(30)
+        else:
+            check_login(username, password)
+    except KeyboardInterrupt:
+        print('Script cancelled by user')
+        return
+    except Exception:
+        print('An error occured while trying to run the script')
+        return
 
 if __name__ == '__main__':
     main()
