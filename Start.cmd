@@ -1,2 +1,0 @@
-pythonw WebsiteLogin.py
-pause

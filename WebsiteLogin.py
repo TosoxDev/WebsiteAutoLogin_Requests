@@ -49,7 +49,7 @@ def check_login(username, password):
     
     split_link = record_attendance.split('?')
     print(split_link)
-    ids = split_link[1].split('&amp;')
+    ids = split_link[1].split('&')
     sessid = ids[0].replace('sessid=', '')
     sesskey = ids[1].replace('sesskey=', '')
     print(str(sessid) + ', ' + str(sesskey))
