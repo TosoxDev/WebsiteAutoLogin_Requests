@@ -73,6 +73,7 @@ def check_login(username, password):
     if (response_attendance.status_code != 200):
         print('Failed to check attendence: ' + str(response_attendance.status_code))
         return
+    print('Login successful')
 
 def main():
     try:
