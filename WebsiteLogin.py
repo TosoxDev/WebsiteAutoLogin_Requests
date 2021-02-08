@@ -60,11 +60,8 @@ def check_login(username, password):
         'referer' : record_attendance
     }
     payload_attendance = {
-        '_qf__mod_attendance_form_studentattendance': '1',
-        'mform_isexpanded_id_session=1': '1',
         'studentpassword': attendance_password,
         'status': '361',
-        'submitbutton': 'Änderungen speichern',
         'sessid': sessid,
         'sesskey': sesskey
     }
@@ -88,9 +85,9 @@ def main():
     except KeyboardInterrupt:
         print('Script cancelled by user')
         return
-    except Exception:
-        print('An error occured while trying to run the script')
-        return
+    #except Exception:
+        #print('An error occured while trying to run the script')
+        #return
 
-if __name__ == '__main__':
+if (__name__ == '__main__'):
     main()
