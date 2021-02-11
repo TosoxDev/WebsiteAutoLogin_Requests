@@ -1,22 +1,58 @@
+from configparser import ConfigParser
+from pathlib import Path
 import requests
 import schedule
 import time
 from bs4 import BeautifulSoup
 
+config_path = (str(Path(__file__).parent.absolute()) + '\\config.ini')
 attendance_password = 'Anwesenheit_J1_Asset'
 origin_url = 'https://moodle.egkehl.de/'
 login_url = 'https://moodle.egkehl.de/moodle/blocks/exa2fa/login/'
 attendance_link = 'https://moodle.egkehl.de/moodle/mod/attendance/view.php?id=16845'
 
-def set_config():
-    username = input('Username: ')
-    password = input('Password: ')
+def check_config():
+    use_config = input('Do you want to use your config? (y/n): ')
+    if (use_config.lower() == 'y'):
+        return get_config()
+    else:
+        return set_config()
+
+def set_schedule_task():
     schedule_task = input('Do you want to schedule the task for 8am? (y/n): ')
     if (schedule_task.lower() == 'y'):
         schedule_task = True
     else:
         schedule_task = False
-    return username, password, schedule_task
+    return schedule_task
+
+def save_config(username, password):
+    save_config = input('Do you want to save the config? (y/n): ')
+    if (save_config.lower() == 'y'):
+        config = ConfigParser()
+        config['CONFIG'] = {'username': username, 'password': password}
+        config.write(open(config_path, 'w'))
+        
+
+def get_config():
+    config = ConfigParser()
+    if (Path(config_path).is_file()):
+        config.read(config_path)
+        if (config.has_section('CONFIG')):
+            username = config.get('CONFIG', 'username')
+            password = config.get('CONFIG', 'password')
+        else:
+            password, username = set_config()
+        return username, password
+    else:
+        print('An error occurred while trying reading the config')
+        return set_config()
+
+def set_config():
+    username = input('Username: ')
+    password = input('Password: ')
+    save_config(username, password)
+    return username, password
 
 def check_login(username, password):
     s = requests.session()
@@ -60,6 +96,7 @@ def check_login(username, password):
         'referer' : record_attendance
     }
     payload_attendance = {
+        'submitbutton': 'Änderungen speichern',
         'studentpassword': attendance_password,
         'status': '361',
         'sessid': sessid,
@@ -74,8 +111,8 @@ def check_login(username, password):
 
 def main():
     try:
-        username, password, schedule_task = set_config()
-        if (schedule_task):
+        username, password = check_config()
+        if (set_schedule_task()):
             schedule.every().day.at('08:00').do(check_login, username, password)
             while True:
                 schedule.run_pending()
@@ -85,9 +122,9 @@ def main():
     except KeyboardInterrupt:
         print('Script cancelled by user')
         return
-    #except Exception:
-        #print('An error occured while trying to run the script')
-        #return
+    except Exception:
+        print('An error occured while trying to run the script')
+        return
 
 if (__name__ == '__main__'):
     main()
