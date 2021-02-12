@@ -21,10 +21,9 @@ def check_config():
 def set_schedule_task():
     schedule_task = input('Do you want to schedule the task for 8am? (y/n): ')
     if (schedule_task.lower() == 'y'):
-        schedule_task = True
+        return True
     else:
-        schedule_task = False
-    return schedule_task
+        return False
 
 def save_config(username, password):
     save_config = input('Do you want to save the config? (y/n): ')
@@ -74,13 +73,9 @@ def check_login(username, password):
         print('Failed to login: ' + str(response_login.status_code))
         return
     
-    try:
-        soup = BeautifulSoup(s.get(attendance_link).text, 'html.parser')
-        record_attendance = soup.find('td', {'class': 'statuscol cell c2 lastcol'}).findChild('a').get('href')
-        print(record_attendance)
-    except AttributeError:
-        print('Error finding the attendance-recording link')
-        return
+    soup = BeautifulSoup(s.get(attendance_link).text, 'html.parser')
+    record_attendance = soup.find('td', {'class': 'statuscol cell c2 lastcol'}).findChild('a').get('href')
+    print(record_attendance)
     
     split_link = record_attendance.split('?')
     ids = split_link[1].split('&')
@@ -94,7 +89,7 @@ def check_login(username, password):
         'referer' : record_attendance
     }
     payload_attendance = {
-        'submitbutton': 'Änderungen speichern',
+        '_qf__mod_attendance_form_studentattendance': '1',
         'studentpassword': attendance_password,
         'status': '361',
         'sessid': sessid,
@@ -117,6 +112,9 @@ def main():
                 time.sleep(30)
         else:
             check_login(username, password)
+    except AttributeError:
+        print('An error occured while trying to find the attendance-recording link')
+        return
     except KeyboardInterrupt:
         print('Script cancelled by user')
         return
